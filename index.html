@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soạn tin chăm sóc khách hàng</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F6F8;
+    --surface:#FFFFFF;
+    --text:#171B26;
+    --text-soft:#5B6478;
+    --border:#DFE3EA;
+    --accent:#1F6F78;
+    --accent-hover:#17565C;
+    --accent-soft:#E4F1F0;
+    --field-empty:#B3541E;
+    --field-empty-bg:#FBEEE6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+    line-height:1.5;
+  }
+  header{
+    padding:20px 24px 16px;
+    border-bottom:1px solid var(--border);
+    background:var(--surface);
+  }
+  header h1{
+    margin:0 0 4px;
+    font-size:19px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  header p{
+    margin:0;
+    color:var(--text-soft);
+    font-size:13.5px;
+  }
+  .layout{
+    display:grid;
+    grid-template-columns:320px 1fr;
+    gap:0;
+    max-width:1100px;
+    margin:0 auto;
+    min-height:calc(100vh - 74px);
+  }
+  @media (max-width:800px){
+    .layout{ grid-template-columns:1fr; }
+  }
+  .panel-left{
+    border-right:1px solid var(--border);
+    padding:20px;
+    background:var(--surface);
+  }
+  @media (max-width:800px){
+    .panel-left{ border-right:none; border-bottom:1px solid var(--border); }
+  }
+  .section-label{
+    font-size:12px;
+    font-weight:600;
+    color:var(--text-soft);
+    margin:0 0 8px;
+  }
+  .tabs{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:20px;
+  }
+  .tab-btn{
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    padding:7px 12px;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    transition:background .12s, border-color .12s;
+  }
+  .tab-btn:hover{ border-color:var(--accent); }
+  .tab-btn.active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  .scenario-list{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+    margin-bottom:22px;
+  }
+  .scenario-btn{
+    text-align:left;
+    border:1px solid transparent;
+    background:transparent;
+    padding:8px 10px;
+    border-radius:6px;
+    font-size:13.5px;
+    color:var(--text);
+    cursor:pointer;
+  }
+  .scenario-btn:hover{ background:var(--accent-soft); }
+  .scenario-btn.active{
+    background:var(--accent-soft);
+    border-color:var(--accent);
+    color:var(--accent-hover);
+    font-weight:600;
+  }
+  .fields{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .field label{
+    display:block;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--text-soft);
+    margin-bottom:4px;
+  }
+  .field input{
+    width:100%;
+    padding:8px 10px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    font-size:13.5px;
+    font-family:inherit;
+    color:var(--text);
+  }
+  .field input:focus{
+    outline:none;
+    border-color:var(--accent);
+  }
+  .panel-right{
+    padding:24px 28px;
+  }
+  .preview-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:20px 22px;
+    max-width:640px;
+  }
+  .preview-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .preview-head h2{
+    font-size:14.5px;
+    margin:0;
+    font-weight:600;
+  }
+  .copy-btn{
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    padding:8px 14px;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .copy-btn:hover{ background:var(--accent-hover); }
+  .preview-text{
+    font-size:14.5px;
+    white-space:pre-wrap;
+    line-height:1.65;
+  }
+  .ph-empty{
+    background:var(--field-empty-bg);
+    color:var(--field-empty);
+    border-radius:3px;
+    padding:0 3px;
+    font-weight:600;
+  }
+  .toast{
+    position:fixed;
+    bottom:24px;
+    left:50%;
+    transform:translateX(-50%) translateY(12px);
+    background:var(--text);
+    color:#fff;
+    padding:9px 18px;
+    border-radius:6px;
+    font-size:13px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .15s, transform .15s;
+  }
+  .toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+  .hint{
+    color:var(--text-soft);
+    font-size:12.5px;
+    margin-top:14px;
+    max-width:640px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Soạn tin chăm sóc khách hàng</h1>
+  <p>Chọn nhóm dịch vụ và tình huống, điền thông tin, sao chép và gửi.</p>
+</header>
+
+<div class="layout">
+  <div class="panel-left">
+    <div class="section-label">Nhóm dịch vụ</div>
+    <div class="tabs" id="tabs"></div>
+
+    <div class="section-label">Tình huống</div>
+    <div class="scenario-list" id="scenarioList"></div>
+
+    <div class="section-label">Thông tin điền vào</div>
+    <div class="fields" id="fields"></div>
+  </div>
+
+  <div class="panel-right">
+    <div class="preview-card">
+      <div class="preview-head">
+        <h2 id="previewTitle">Xem trước tin nhắn</h2>
+        <button class="copy-btn" id="copyBtn">Sao chép tin nhắn</button>
+      </div>
+      <div class="preview-text" id="previewText"></div>
+    </div>
+    <p class="hint">Ô màu cam trong bản xem trước là thông tin còn thiếu — điền vào form bên trái để tin nhắn hoàn chỉnh trước khi sao chép.</p>
+  </div>
+</div>
+
+<footer style="text-align:center; padding:16px; color:#8A93A6; font-size:12px; border-top:1px solid #DFE3EA; margin-top:8px;">
+  Người lập dự án: Lương Thị Phượng — Team Bựa — Phòng Tư vấn Mắt Bão
+</footer>
+
+<div class="toast" id="toast">Đã sao chép tin nhắn</div>
+
+<script>
+const FIELD_LABELS = {
+  ten_khach_hang: "Tên khách hàng",
+  ten_sale: "Tên bạn (sale)",
+  ten_mien: "Tên miền",
+  goi_dich_vu: "Tên gói dịch vụ",
+  ngay_het_han: "Ngày hết hạn",
+  so_ngay_con_lai: "Số ngày còn lại",
+  link_thanh_toan: "Link thanh toán",
+  link_gia_han: "Link gia hạn",
+  ly_do: "Lý do khóa",
+  thong_tin_can_thiet: "Thông tin cần bổ sung",
+  mo_ta_su_co: "Mô tả sự cố",
+  thoi_gian_cam_ket: "Thời gian cam kết phản hồi",
+  so_luong: "Số lượng mailbox"
+};
+
+const DATA = [
+  { id:"domain", label:"Tên miền", templates:[
+    { id:"d1", label:"Tư vấn đăng ký domain mới",
+      text:"Chào anh/chị {ten_khach_hang}, em là {ten_sale} bên Mắt Bão. Em thấy tên miền {ten_mien} anh/chị quan tâm hiện vẫn còn trống ạ. Anh/chị có muốn em check thêm vài đuôi (.vn/.com/.com.vn) để so sánh giá và đăng ký sớm không, tránh trường hợp bị người khác mua trước ạ?" },
+    { id:"d2", label:"Nhắc gia hạn domain sắp hết hạn",
+      text:"Chào anh/chị {ten_khach_hang}, tên miền {ten_mien} của mình sẽ hết hạn vào {ngay_het_han} (còn {so_ngay_con_lai} ngày). Em gửi anh/chị link gia hạn sớm để tránh gián đoạn website/email: {link_gia_han}. Anh/chị cần em hỗ trợ gì thêm không ạ?" },
+    { id:"d3", label:"Domain đã hết hạn — hỗ trợ khôi phục",
+      text:"Anh/chị {ten_khach_hang} ơi, tên miền {ten_mien} đã hết hạn từ {ngay_het_han} và đang trong thời gian giữ chỗ (redemption). Em có thể hỗ trợ khôi phục ngay để website/email hoạt động lại bình thường, tuy nhiên phí khôi phục sẽ cao hơn phí gia hạn thông thường. Anh/chị xác nhận giúp em để em xử lý gấp ạ." },
+    { id:"d4", label:"Tư vấn chuyển domain về Mắt Bão",
+      text:"Chào anh/chị {ten_khach_hang}, để chuyển tên miền {ten_mien} về quản lý tại Mắt Bão, anh/chị cần: (1) mở khóa domain, (2) lấy mã Auth code từ nhà cung cấp cũ, (3) gửi em để khởi tạo lệnh chuyển. Quá trình thường mất 5-7 ngày, em sẽ đồng hành hỗ trợ từng bước ạ." },
+    { id:"d5", label:"Domain bị khóa/tranh chấp",
+      text:"Chào anh/chị {ten_khach_hang}, hệ thống ghi nhận tên miền {ten_mien} đang tạm khóa do {ly_do}. Em cần anh/chị bổ sung/xác nhận {thong_tin_can_thiet} để mở khóa sớm, tránh ảnh hưởng website đang vận hành ạ." }
+  ]},
+  { id:"hosting", label:"Hosting / Cloud Server", templates:[
+    { id:"h1", label:"Tư vấn chọn gói phù hợp",
+      text:"Chào anh/chị {ten_khach_hang}, để tư vấn đúng gói Hosting/Cloud Server, em xin hỏi thêm: website của mình là loại gì (giới thiệu/bán hàng/portal), lượng truy cập trung bình khoảng bao nhiêu/tháng, và có dùng công nghệ đặc thù (WordPress, Java, NodeJS...) không ạ?" },
+    { id:"h2", label:"Nhắc gia hạn hosting",
+      text:"Chào anh/chị {ten_khach_hang}, gói {goi_dich_vu} sẽ hết hạn vào {ngay_het_han} (còn {so_ngay_con_lai} ngày). Anh/chị gia hạn sớm giúp em để website không bị gián đoạn nhé, link thanh toán: {link_thanh_toan}." },
+    { id:"h3", label:"Website chậm/down — xử lý sự cố",
+      text:"Chào anh/chị {ten_khach_hang}, em đã ghi nhận sự cố website {ten_mien} bị {mo_ta_su_co}. Em đang phối hợp kỹ thuật kiểm tra và sẽ cập nhật tiến độ cho anh/chị trong vòng {thoi_gian_cam_ket}. Rất xin lỗi vì sự bất tiện này ạ." },
+    { id:"h4", label:"Upsell nâng cấp gói",
+      text:"Chào anh/chị {ten_khach_hang}, em thấy website đang dùng gói {goi_dich_vu} gần đây có lượng truy cập/dữ liệu tăng khá nhiều, gần chạm giới hạn gói hiện tại. Để tránh ảnh hưởng tốc độ tải trang, anh/chị cân nhắc nâng cấp lên gói cao hơn không ạ? Em gửi bảng so sánh chi tiết để mình dễ quyết định." },
+    { id:"h5", label:"Hết dung lượng lưu trữ",
+      text:"Chào anh/chị {ten_khach_hang}, dung lượng lưu trữ gói {goi_dich_vu} hiện đã sử dụng gần hết (>90%). Anh/chị có thể dọn bớt dữ liệu cũ hoặc nâng cấp dung lượng để website hoạt động ổn định. Em có thể hỗ trợ báo giá nâng cấp ngay ạ." }
+  ]},
+  { id:"email", label:"Email doanh nghiệp", templates:[
+    { id:"e1", label:"Tư vấn mua email mới",
+      text:"Chào anh/chị {ten_khach_hang}, với nhu cầu dùng email theo tên miền công ty {ten_mien}, em gợi ý 2 lựa chọn: Email Pro (chi phí tối ưu, phù hợp SME) hoặc Microsoft 365 (kèm bộ Office, Teams, lưu trữ đám mây). Anh/chị cho em biết số lượng nhân sự cần dùng để em báo giá chính xác nhé." },
+    { id:"e2", label:"Hướng dẫn cấu hình ban đầu",
+      text:"Chào anh/chị {ten_khach_hang}, tài khoản email {goi_dich_vu} của mình đã khởi tạo xong. Em gửi anh/chị hướng dẫn cấu hình trên điện thoại/Outlook kèm thông tin đăng nhập. Trong quá trình cài đặt có vướng chỗ nào anh/chị cứ nhắn em hỗ trợ trực tiếp ạ." },
+    { id:"e3", label:"Nhắc gia hạn license",
+      text:"Chào anh/chị {ten_khach_hang}, license {goi_dich_vu} sẽ hết hạn vào {ngay_het_han}. Anh/chị gia hạn trước ngày hết hạn để tránh gián đoạn truy cập email/dữ liệu công việc nhé: {link_gia_han}." },
+    { id:"e4", label:"Sự cố gửi/nhận mail",
+      text:"Chào anh/chị {ten_khach_hang}, em đã tiếp nhận phản ánh về việc email {mo_ta_su_co}. Nguyên nhân thường gặp là do cấu hình SPF/DKIM/DMARC hoặc domain reputation. Em sẽ kiểm tra và phản hồi anh/chị kết quả trong {thoi_gian_cam_ket} ạ." },
+    { id:"e5", label:"Yêu cầu thêm user/mailbox",
+      text:"Chào anh/chị {ten_khach_hang}, để thêm {so_luong} mailbox mới vào gói {goi_dich_vu}, em cần anh/chị cung cấp tên và email liên hệ của nhân sự mới. Em sẽ khởi tạo và gửi thông tin đăng nhập trong ngày ạ." }
+  ]},
+  { id:"chung", label:"Chăm sóc chung", templates:[
+    { id:"c1", label:"Chào khách mới liên hệ",
+      text:"Chào anh/chị {ten_khach_hang}, em là {ten_sale} — tư vấn viên phụ trách hỗ trợ mình bên Mắt Bão. Rất vui được đồng hành cùng anh/chị. Anh/chị đang cần hỗ trợ về dịch vụ nào ạ (tên miền/hosting/email/SSL) để em tư vấn nhanh và chính xác nhất?" },
+    { id:"c2", label:"Follow-up sau báo giá chưa phản hồi",
+      text:"Chào anh/chị {ten_khach_hang}, em gửi lại báo giá gói {goi_dich_vu} hôm trước để tiện anh/chị xem lại. Anh/chị có câu hỏi hay cần điều chỉnh gì thêm không, em hỗ trợ ngay ạ. Nếu anh/chị cần thêm thời gian cân nhắc, em xin phép follow-up lại sau vài ngày nữa nhé." },
+    { id:"c3", label:"Cảm ơn sau khi chốt đơn",
+      text:"Cảm ơn anh/chị {ten_khach_hang} đã tin tưởng lựa chọn dịch vụ {goi_dich_vu} tại Mắt Bão! Trong quá trình sử dụng, nếu cần hỗ trợ gì anh/chị cứ liên hệ em trực tiếp, em luôn sẵn sàng đồng hành ạ." },
+    { id:"c4", label:"Xin lỗi khi có sự cố/khiếu nại",
+      text:"Chào anh/chị {ten_khach_hang}, em rất xin lỗi vì sự cố {mo_ta_su_co} đã gây bất tiện cho anh/chị. Em đã báo cáo bộ phận kỹ thuật xử lý ưu tiên và sẽ cập nhật tiến độ sớm nhất. Cảm ơn anh/chị đã kiên nhẫn ạ." },
+    { id:"c5", label:"Khảo sát hài lòng sau hỗ trợ",
+      text:"Chào anh/chị {ten_khach_hang}, cảm ơn anh/chị đã sử dụng dịch vụ hỗ trợ vừa rồi. Anh/chị đánh giá mức độ hài lòng thế nào (thang điểm 1-5) và có góp ý gì để em cải thiện chất lượng phục vụ tốt hơn không ạ?" }
+  ]}
+];
+
+let state = {
+  categoryId: DATA[0].id,
+  templateId: DATA[0].templates[0].id,
+  values: {}
+};
+
+function getCategory(id){ return DATA.find(c => c.id === id); }
+function getTemplate(catId, tplId){ return getCategory(catId).templates.find(t => t.id === tplId); }
+function extractFields(text){
+  const matches = text.match(/\{([a-z_]+)\}/g) || [];
+  return [...new Set(matches.map(m => m.slice(1, -1)))];
+}
+
+function renderTabs(){
+  const el = document.getElementById('tabs');
+  el.innerHTML = '';
+  DATA.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (cat.id === state.categoryId ? ' active' : '');
+    btn.textContent = cat.label;
+    btn.onclick = () => {
+      state.categoryId = cat.id;
+      state.templateId = getCategory(cat.id).templates[0].id;
+      state.values = {};
+      renderAll();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function renderScenarios(){
+  const el = document.getElementById('scenarioList');
+  el.innerHTML = '';
+  getCategory(state.categoryId).templates.forEach(tpl => {
+    const btn = document.createElement('button');
+    btn.className = 'scenario-btn' + (tpl.id === state.templateId ? ' active' : '');
+    btn.textContent = tpl.label;
+    btn.onclick = () => {
+      state.templateId = tpl.id;
+      state.values = {};
+      renderAll();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function renderFields(){
+  const el = document.getElementById('fields');
+  el.innerHTML = '';
+  const tpl = getTemplate(state.categoryId, state.templateId);
+  const fieldKeys = extractFields(tpl.text);
+  if(fieldKeys.length === 0){
+    el.innerHTML = '<p style="color:var(--text-soft); font-size:13px; margin:0;">Mẫu này không cần điền thêm thông tin.</p>';
+    return;
+  }
+  fieldKeys.forEach(key => {
+    const wrap = document.createElement('div');
+    wrap.className = 'field';
+    const label = document.createElement('label');
+    label.textContent = FIELD_LABELS[key] || key;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = state.values[key] || '';
+    input.oninput = (e) => {
+      state.values[key] = e.target.value;
+      renderPreview();
+    };
+    wrap.appendChild(label);
+    wrap.appendChild(input);
+    el.appendChild(wrap);
+  });
+}
+
+function renderPreview(){
+  const tpl = getTemplate(state.categoryId, state.templateId);
+  document.getElementById('previewTitle').textContent = tpl.label;
+  const el = document.getElementById('previewText');
+  el.innerHTML = '';
+  const parts = tpl.text.split(/(\{[a-z_]+\})/g);
+  parts.forEach(part => {
+    const m = part.match(/^\{([a-z_]+)\}$/);
+    if(m){
+      const key = m[1];
+      const val = state.values[key];
+      if(val){
+        el.appendChild(document.createTextNode(val));
+      } else {
+        const span = document.createElement('span');
+        span.className = 'ph-empty';
+        span.textContent = FIELD_LABELS[key] || key;
+        el.appendChild(span);
+      }
+    } else {
+      el.appendChild(document.createTextNode(part));
+    }
+  });
+}
+
+function getPlainMessage(){
+  const tpl = getTemplate(state.categoryId, state.templateId);
+  return tpl.text.replace(/\{([a-z_]+)\}/g, (full, key) => state.values[key] || full);
+}
+
+function renderAll(){
+  renderTabs();
+  renderScenarios();
+  renderFields();
+  renderPreview();
+}
+
+document.getElementById('copyBtn').addEventListener('click', async () => {
+  const msg = getPlainMessage();
+  try {
+    await navigator.clipboard.writeText(msg);
+  } catch(e) {
+    const ta = document.createElement('textarea');
+    ta.value = msg;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 1600);
+});
+
+renderAll();
+</script>
+</body>
+</html>
