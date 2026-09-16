@@ -1,0 +1,17 @@
+{
+  "name": "cong-cu-soan-tin-cham-soc",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Công cụ soạn nhanh tin nhắn chăm sóc khách hàng từ mẫu - Mắt Bão",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
+  }
+}

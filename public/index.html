@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soạn tin chăm sóc khách hàng</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F6F8;
+    --surface:#FFFFFF;
+    --text:#171B26;
+    --text-soft:#5B6478;
+    --border:#DFE3EA;
+    --accent:#1F6F78;
+    --accent-hover:#17565C;
+    --accent-soft:#E4F1F0;
+    --field-empty:#B3541E;
+    --field-empty-bg:#FBEEE6;
+    --danger:#B3261E;
+    --danger-soft:#FBEAEA;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+    line-height:1.5;
+  }
+  header{
+    padding:18px 24px;
+    border-bottom:1px solid var(--border);
+    background:var(--surface);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  header h1{ margin:0 0 4px; font-size:19px; font-weight:700; letter-spacing:-0.01em; }
+  header p{ margin:0; color:var(--text-soft); font-size:13.5px; }
+  .mode-btn{
+    border:1px solid var(--border);
+    background:var(--surface);
+    padding:8px 14px;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .mode-btn.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  .error-banner{
+    max-width:640px;
+    margin:40px auto;
+    background:var(--surface);
+    border:1px solid var(--danger);
+    border-radius:8px;
+    padding:24px;
+    font-size:14px;
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    max-width:1140px;
+    margin:0 auto;
+    min-height:calc(100vh - 74px);
+  }
+  @media (max-width:800px){ .layout{ grid-template-columns:1fr; } }
+
+  .panel-left{ border-right:1px solid var(--border); padding:20px; background:var(--surface); }
+  @media (max-width:800px){ .panel-left{ border-right:none; border-bottom:1px solid var(--border); } }
+
+  .section-label{ font-size:12px; font-weight:600; color:var(--text-soft); margin:0 0 8px; }
+
+  .tabs{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:20px; }
+  .tab-btn{
+    border:1px solid var(--border); background:var(--surface); color:var(--text);
+    padding:7px 12px; border-radius:6px; font-size:13px; font-weight:500; cursor:pointer;
+  }
+  .tab-btn:hover{ border-color:var(--accent); }
+  .tab-btn.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  .scenario-list{ display:flex; flex-direction:column; gap:5px; margin-bottom:16px; }
+  .scenario-row{ display:flex; align-items:center; gap:4px; }
+  .scenario-btn{
+    flex:1; text-align:left; border:1px solid transparent; background:transparent;
+    padding:8px 10px; border-radius:6px; font-size:13.5px; color:var(--text); cursor:pointer;
+  }
+  .scenario-btn:hover{ background:var(--accent-soft); }
+  .scenario-btn.active{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent-hover); font-weight:600; }
+  .icon-btn{
+    border:none; background:transparent; cursor:pointer; font-size:13px; padding:6px 7px;
+    border-radius:5px; color:var(--text-soft);
+  }
+  .icon-btn:hover{ background:var(--bg); }
+  .icon-btn.delete:hover{ background:var(--danger-soft); color:var(--danger); }
+
+  .add-scenario-btn{
+    width:100%; text-align:left; border:1px dashed var(--border); background:transparent;
+    padding:8px 10px; border-radius:6px; font-size:13px; color:var(--accent); cursor:pointer;
+    margin-bottom:20px;
+  }
+  .add-scenario-btn:hover{ border-color:var(--accent); background:var(--accent-soft); }
+
+  .fields{ display:flex; flex-direction:column; gap:12px; }
+  .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--text-soft); margin-bottom:4px; }
+  .field input, .field textarea, .field select{
+    width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:6px;
+    font-size:13.5px; font-family:inherit; color:var(--text);
+  }
+  .field input:focus, .field textarea:focus, .field select:focus{ outline:none; border-color:var(--accent); }
+
+  .panel-right{ padding:24px 28px; }
+  .preview-card{ background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:20px 22px; max-width:640px; }
+  .preview-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px; flex-wrap:wrap; }
+  .preview-head h2{ font-size:14.5px; margin:0; font-weight:600; }
+  .btn-row{ display:flex; gap:8px; }
+  .copy-btn, .save-btn{ background:var(--accent); color:#fff; border:none; padding:8px 14px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; }
+  .copy-btn:hover, .save-btn:hover{ background:var(--accent-hover); }
+  .cancel-btn{ background:transparent; color:var(--text-soft); border:1px solid var(--border); padding:8px 14px; border-radius:6px; font-size:13px; cursor:pointer; }
+  .preview-text{ font-size:14.5px; white-space:pre-wrap; line-height:1.65; }
+  .edit-textarea{ width:100%; min-height:140px; font-size:14px; font-family:inherit; padding:10px; border:1px solid var(--border); border-radius:6px; line-height:1.6; }
+  .ph-empty{ background:var(--field-empty-bg); color:var(--field-empty); border-radius:3px; padding:0 3px; font-weight:600; }
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(12px);
+    background:var(--text); color:#fff; padding:9px 18px; border-radius:6px; font-size:13px;
+    opacity:0; pointer-events:none; transition:opacity .15s, transform .15s;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .hint{ color:var(--text-soft); font-size:12.5px; margin-top:14px; max-width:640px; }
+
+  .new-form{ background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:16px; display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+  footer{ text-align:center; padding:16px; color:#8A93A6; font-size:12px; border-top:1px solid var(--border); margin-top:8px; }
+</style>
+</head>
+<body>
+
+<div id="errorBanner"></div>
+<div id="app">
+
+<header>
+  <div>
+    <h1>Soạn tin chăm sóc khách hàng</h1>
+    <p>Chọn tình huống, điền thông tin, sao chép và gửi.</p>
+  </div>
+  <button class="mode-btn" id="modeBtn">Chế độ quản lý</button>
+</header>
+
+<div class="layout">
+  <div class="panel-left">
+    <div class="section-label">Nhóm dịch vụ</div>
+    <div class="tabs" id="tabs"></div>
+
+    <div class="section-label">Tình huống</div>
+    <div class="scenario-list" id="scenarioList"></div>
+    <button class="add-scenario-btn" id="addScenarioBtn" style="display:none;">+ Thêm tình huống mới</button>
+
+    <div id="newFormWrap"></div>
+
+    <div class="section-label" id="fieldsLabel">Thông tin điền vào</div>
+    <div class="fields" id="fields"></div>
+  </div>
+
+  <div class="panel-right">
+    <div class="preview-card">
+      <div class="preview-head">
+        <h2 id="previewTitle">Xem trước tin nhắn</h2>
+        <div class="btn-row" id="previewActions"></div>
+      </div>
+      <div id="previewBody"></div>
+    </div>
+    <p class="hint">Ô màu cam trong bản xem trước là thông tin còn thiếu — điền vào form bên trái để tin nhắn hoàn chỉnh trước khi sao chép. Bật "Chế độ quản lý" để sửa nội dung mẫu, thêm tình huống mới, hoặc xóa mẫu không dùng nữa.</p>
+  </div>
+</div>
+
+<footer>Người lập dự án: Lương Thị Phượng — Team Bựa — Phòng Tư vấn Mắt Bão</footer>
+
+</div>
+
+<div class="toast" id="toast">Đã lưu</div>
+
+<script>
+const FIELD_LABELS = {
+  ten_khach_hang: "Tên khách hàng",
+  ten_sale: "Tên bạn (sale)",
+  ten_mien: "Tên miền",
+  goi_dich_vu: "Tên gói dịch vụ",
+  ngay_het_han: "Ngày hết hạn",
+  so_ngay_con_lai: "Số ngày còn lại",
+  link_thanh_toan: "Link thanh toán",
+  link_gia_han: "Link gia hạn",
+  ly_do: "Lý do khóa",
+  thong_tin_can_thiet: "Thông tin cần bổ sung",
+  mo_ta_su_co: "Mô tả sự cố",
+  thoi_gian_cam_ket: "Thời gian cam kết phản hồi",
+  so_luong: "Số lượng mailbox"
+};
+
+function fieldLabel(key){
+  if (FIELD_LABELS[key]) return FIELD_LABELS[key];
+  return key.replace(/_/g, ' ');
+}
+
+let templates = [];
+let categories = [];
+let state = { categoryId:null, templateId:null, values:{}, mode:'use', editingText:null, addingNew:false };
+
+async function api(path, options){
+  const res = await fetch(path, options);
+  if(!res.ok){
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Lỗi API (${res.status})`);
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+async function loadTemplates(){
+  try {
+    templates = await api('/api/templates');
+  } catch(err){
+    document.getElementById('errorBanner').innerHTML = `
+      <div class="error-banner">
+        <h2 style="margin-top:0;">Không tải được dữ liệu</h2>
+        <p>Không kết nối được tới database qua API nội bộ. Kiểm tra lại biến môi trường <code>DATABASE_URL</code> trên Vibe Host, và xem log triển khai để biết chi tiết lỗi.</p>
+        <p style="color:var(--danger); font-size:13px;">${err.message}</p>
+      </div>`;
+    return;
+  }
+  document.getElementById('errorBanner').innerHTML = '';
+  categories = [];
+  const seen = new Set();
+  templates.forEach(t => {
+    if(!seen.has(t.category_id)){
+      seen.add(t.category_id);
+      categories.push({ id:t.category_id, label:t.category_label });
+    }
+  });
+  if(!state.categoryId && categories.length){
+    state.categoryId = categories[0].id;
+  }
+  const catTemplates = templates.filter(t => t.category_id === state.categoryId);
+  if(!state.templateId && catTemplates.length){
+    state.templateId = catTemplates[0].id;
+  }
+  renderAll();
+}
+
+function tplsInCategory(catId){ return templates.filter(t => t.category_id === catId); }
+function getTemplate(id){ return templates.find(t => t.id === id); }
+function extractFields(text){
+  const matches = text.match(/\{([a-z_]+)\}/g) || [];
+  return [...new Set(matches.map(m => m.slice(1,-1)))];
+}
+
+function renderTabs(){
+  const el = document.getElementById('tabs');
+  el.innerHTML = '';
+  categories.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn' + (cat.id === state.categoryId ? ' active' : '');
+    btn.textContent = cat.label;
+    btn.onclick = () => {
+      state.categoryId = cat.id;
+      const first = tplsInCategory(cat.id)[0];
+      state.templateId = first ? first.id : null;
+      state.values = {};
+      state.editingText = null;
+      state.addingNew = false;
+      renderAll();
+    };
+    el.appendChild(btn);
+  });
+}
+
+function renderScenarios(){
+  const el = document.getElementById('scenarioList');
+  el.innerHTML = '';
+  tplsInCategory(state.categoryId).forEach(tpl => {
+    const row = document.createElement('div');
+    row.className = 'scenario-row';
+    const btn = document.createElement('button');
+    btn.className = 'scenario-btn' + (tpl.id === state.templateId ? ' active' : '');
+    btn.textContent = tpl.scenario_label;
+    btn.onclick = () => {
+      state.templateId = tpl.id;
+      state.values = {};
+      state.editingText = null;
+      state.addingNew = false;
+      renderAll();
+    };
+    row.appendChild(btn);
+    if(state.mode === 'manage'){
+      const delBtn = document.createElement('button');
+      delBtn.className = 'icon-btn delete';
+      delBtn.textContent = 'Xóa';
+      delBtn.onclick = async (e) => {
+        e.stopPropagation();
+        if(confirm(`Xóa mẫu "${tpl.scenario_label}"?`)){
+          try {
+            await api(`/api/templates/${tpl.id}`, { method:'DELETE' });
+            if(state.templateId === tpl.id) state.templateId = null;
+            await loadTemplates();
+            showToast('Đã xóa mẫu');
+          } catch(err){ alert('Lỗi khi xóa: ' + err.message); }
+        }
+      };
+      row.appendChild(delBtn);
+    }
+    el.appendChild(row);
+  });
+  document.getElementById('addScenarioBtn').style.display = state.mode === 'manage' ? 'block' : 'none';
+}
+
+function renderNewForm(){
+  const wrap = document.getElementById('newFormWrap');
+  wrap.innerHTML = '';
+  if(!state.addingNew){ return; }
+  const box = document.createElement('div');
+  box.className = 'new-form';
+  box.innerHTML = `
+    <div class="field">
+      <label>Tên tình huống</label>
+      <input type="text" id="newScenarioLabel" placeholder="Ví dụ: Nhắc thanh toán quá hạn">
+    </div>
+    <div class="field">
+      <label>Nội dung mẫu (dùng {ten_bien} cho chỗ cần điền)</label>
+      <textarea id="newScenarioText" rows="5" placeholder="Chào anh/chị {ten_khach_hang}, ..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="save-btn" id="saveNewBtn">Lưu mẫu mới</button>
+      <button class="cancel-btn" id="cancelNewBtn">Hủy</button>
+    </div>
+  `;
+  wrap.appendChild(box);
+  document.getElementById('saveNewBtn').onclick = async () => {
+    const label = document.getElementById('newScenarioLabel').value.trim();
+    const text = document.getElementById('newScenarioText').value.trim();
+    if(!label || !text){ alert('Nhập đủ tên tình huống và nội dung mẫu.'); return; }
+    const cat = categories.find(c => c.id === state.categoryId);
+    const maxOrder = Math.max(0, ...tplsInCategory(state.categoryId).map(t => t.sort_order || 0));
+    try {
+      const created = await api('/api/templates', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          category_id: state.categoryId,
+          category_label: cat.label,
+          scenario_label: label,
+          message_text: text,
+          sort_order: maxOrder + 1
+        })
+      });
+      state.addingNew = false;
+      state.templateId = created.id;
+      await loadTemplates();
+      showToast('Đã thêm mẫu mới');
+    } catch(err){ alert('Lỗi khi lưu: ' + err.message); }
+  };
+  document.getElementById('cancelNewBtn').onclick = () => {
+    state.addingNew = false;
+    renderAll();
+  };
+}
+
+function renderFields(){
+  const el = document.getElementById('fields');
+  el.innerHTML = '';
+  document.getElementById('fieldsLabel').style.display = state.editingText !== null ? 'none' : 'block';
+  if(state.editingText !== null || !state.templateId) return;
+  const tpl = getTemplate(state.templateId);
+  if(!tpl) return;
+  const keys = extractFields(tpl.message_text);
+  if(keys.length === 0){
+    el.innerHTML = '<p style="color:var(--text-soft); font-size:13px; margin:0;">Mẫu này không cần điền thêm thông tin.</p>';
+    return;
+  }
+  keys.forEach(key => {
+    const wrap = document.createElement('div');
+    wrap.className = 'field';
+    const label = document.createElement('label');
+    label.textContent = fieldLabel(key);
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = state.values[key] || '';
+    input.oninput = (e) => { state.values[key] = e.target.value; renderPreview(); };
+    wrap.appendChild(label);
+    wrap.appendChild(input);
+    el.appendChild(wrap);
+  });
+}
+
+function renderPreview(){
+  const tpl = getTemplate(state.templateId);
+  const titleEl = document.getElementById('previewTitle');
+  const actionsEl = document.getElementById('previewActions');
+  const bodyEl = document.getElementById('previewBody');
+  actionsEl.innerHTML = '';
+  bodyEl.innerHTML = '';
+
+  if(!tpl){
+    titleEl.textContent = 'Chưa có mẫu nào';
+    return;
+  }
+  titleEl.textContent = tpl.scenario_label;
+
+  if(state.editingText !== null){
+    const ta = document.createElement('textarea');
+    ta.className = 'edit-textarea';
+    ta.value = state.editingText;
+    ta.oninput = (e) => { state.editingText = e.target.value; };
+    bodyEl.appendChild(ta);
+
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'save-btn';
+    saveBtn.textContent = 'Lưu thay đổi';
+    saveBtn.onclick = async () => {
+      try {
+        await api(`/api/templates/${tpl.id}`, {
+          method:'PUT',
+          headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({ message_text: state.editingText })
+        });
+        state.editingText = null;
+        await loadTemplates();
+        showToast('Đã lưu thay đổi mẫu');
+      } catch(err){ alert('Lỗi khi lưu: ' + err.message); }
+    };
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'cancel-btn';
+    cancelBtn.textContent = 'Hủy';
+    cancelBtn.onclick = () => { state.editingText = null; renderAll(); };
+    actionsEl.appendChild(saveBtn);
+    actionsEl.appendChild(cancelBtn);
+    return;
+  }
+
+  const textDiv = document.createElement('div');
+  textDiv.className = 'preview-text';
+  const parts = tpl.message_text.split(/(\{[a-z_]+\})/g);
+  parts.forEach(part => {
+    const m = part.match(/^\{([a-z_]+)\}$/);
+    if(m){
+      const key = m[1];
+      const val = state.values[key];
+      if(val){
+        textDiv.appendChild(document.createTextNode(val));
+      } else {
+        const span = document.createElement('span');
+        span.className = 'ph-empty';
+        span.textContent = fieldLabel(key);
+        textDiv.appendChild(span);
+      }
+    } else {
+      textDiv.appendChild(document.createTextNode(part));
+    }
+  });
+  bodyEl.appendChild(textDiv);
+
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'copy-btn';
+  copyBtn.textContent = 'Sao chép tin nhắn';
+  copyBtn.onclick = async () => {
+    const msg = tpl.message_text.replace(/\{([a-z_]+)\}/g, (full,key) => state.values[key] || full);
+    try { await navigator.clipboard.writeText(msg); }
+    catch(e){
+      const ta = document.createElement('textarea');
+      ta.value = msg; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    }
+    showToast('Đã sao chép tin nhắn');
+  };
+  actionsEl.appendChild(copyBtn);
+
+  if(state.mode === 'manage'){
+    const editBtn = document.createElement('button');
+    editBtn.className = 'cancel-btn';
+    editBtn.textContent = 'Sửa nội dung';
+    editBtn.onclick = () => { state.editingText = tpl.message_text; renderAll(); };
+    actionsEl.appendChild(editBtn);
+  }
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1600);
+}
+
+function renderAll(){
+  renderTabs();
+  renderScenarios();
+  renderNewForm();
+  renderFields();
+  renderPreview();
+}
+
+document.getElementById('modeBtn').onclick = () => {
+  state.mode = state.mode === 'manage' ? 'use' : 'manage';
+  state.editingText = null;
+  state.addingNew = false;
+  document.getElementById('modeBtn').classList.toggle('active', state.mode === 'manage');
+  document.getElementById('modeBtn').textContent = state.mode === 'manage' ? 'Thoát chế độ quản lý' : 'Chế độ quản lý';
+  renderAll();
+};
+document.getElementById('addScenarioBtn').onclick = () => {
+  state.addingNew = true;
+  renderAll();
+};
+
+loadTemplates();
+</script>
+</body>
+</html>

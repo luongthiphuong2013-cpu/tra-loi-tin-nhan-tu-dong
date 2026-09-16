@@ -18,20 +18,9 @@ create table if not exists templates (
   updated_at timestamptz default now()
 );
 
--- Bật Row Level Security
-alter table templates enable row level security;
-
--- Cho phép đọc/ghi công khai bằng anon key (phù hợp công cụ nội bộ dùng qua link riêng,
--- không public rộng rãi). Nếu muốn chặt hơn sau này, thay các policy "true" bằng điều
--- kiện kiểm tra người dùng đăng nhập qua Supabase Auth.
-create policy "public read templates" on templates
-  for select using (true);
-create policy "public insert templates" on templates
-  for insert with check (true);
-create policy "public update templates" on templates
-  for update using (true);
-create policy "public delete templates" on templates
-  for delete using (true);
+-- Không cần Row Level Security ở đây: chỉ có backend server.js (chạy trên Vibe Host,
+-- kết nối bằng DATABASE_URL) truy cập trực tiếp vào database này. Trình duyệt của người
+-- dùng không bao giờ chạm vào database, chỉ gọi qua API nội bộ do server.js cung cấp.
 
 -- Nạp sẵn 20 mẫu đã chốt
 insert into templates (category_id, category_label, scenario_label, message_text, sort_order) values
